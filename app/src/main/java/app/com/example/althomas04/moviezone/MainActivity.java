@@ -236,14 +236,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         // This is called when a new Loader needs to be created.
         mNetworkStatus = checkConnectionStatus();
-        if (mNetworkStatus != null && mNetworkStatus.isConnected()) {
-            //If network connection exists, return the new/updated data
+        if (mNetworkStatus != null && mNetworkStatus.isConnected() && !categoryParam.equals("favorites")) {
+            //If network connection exists and the category selected is not "favorites", request & return the new/updated data
             return new MovieLoader(this, categoryParam, pageParam, MOVIE_COLUMNS);
         } else {
             //If network connection does not exist, return the previously stored data for the select category
-            Uri moviesForCategoryUri = MoviesContract.MoviesEntry.buildMoviesCategory(categoryParam);
+            Uri moviesInCategoryUri = MoviesContract.MoviesEntry.buildMoviesCategory(categoryParam);
             return new CursorLoader(this,
-                    moviesForCategoryUri,
+                    moviesInCategoryUri,
                     MOVIE_COLUMNS,
                     null,
                     null,

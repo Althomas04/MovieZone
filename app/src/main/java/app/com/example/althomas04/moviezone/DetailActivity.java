@@ -1,6 +1,7 @@
 package app.com.example.althomas04.moviezone;
 
 import android.app.LoaderManager;
+import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -18,8 +19,15 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.like.LikeButton;
+import com.like.OnLikeListener;
 import com.squareup.picasso.Picasso;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import app.com.example.althomas04.moviezone.Data.MoviesContract;
 
@@ -33,11 +41,15 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     private ShareActionProvider mShareActionProvider;
 
+    private boolean isFavorited;
+    private final long FAVORITES_CAT_KEY = 1;
+
     private static final String TMDB_BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w780";
 
     private static final String MOVIE_ID_URI_KEY = "movie_id_uri_key";
 
     private Uri movieIdUri;
+    private LikeButton favButton;
 
     private static final int DETAIL_LOADER = 0;
 
@@ -69,6 +81,15 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     public static final int COL_MOVIE_VOTE_COUNT = 8;
     public static final int COL_CATEGORY_PARAM = 9;
 
+    private String title;
+    private int movieId;
+    private String posterPath;
+    private String overview;
+    private String releaseDate;
+    private String backdropPath;
+    private float voteAverage;
+    private int voteCount;
+
     private Toolbar mToolbar;
     private TextView mReleaseDateView;
     private TextView mOverviewView;
@@ -86,6 +107,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
 
         getLoaderManager().initLoader(DETAIL_LOADER, null, this);
+        isFavorited = false;
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar_detail);
         mBackdropImageView = (ImageView) findViewById(R.id.expandedImage);
@@ -99,18 +121,57 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.detailfragment, menu);
+        getMenuInflater().inflate(R.menu.detail, menu);
 
         // Retrieve the share menu item
-        MenuItem menuItem = menu.findItem(R.id.action_share);
-
+        MenuItem menuShareItem = menu.findItem(R.id.action_share);
         // Get the provider and hold onto it to set/change the share intent.
-        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuShareItem);
         // If onLoadFinished happens before this, we can go ahead and set the share intent now.
         if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(createShareMovieIntent());
         }
+
+        MenuItem menuFavoriteItem = menu.findItem(R.id.action_favorite);
+        favButton = (LikeButton) MenuItemCompat.getActionView(menuFavoriteItem);
+        isFavorited = readState();
+        if (isFavorited) {
+            favButton.setLiked(true);
+        } else {
+            favButton.setLiked(false);
+        }
+
+        favButton.setOnLikeListener(new OnLikeListener() {
+            @Override
+            public void liked(LikeButton likeButton) {
+                ContentValues movieValues = new ContentValues();
+
+                movieValues.put(MoviesContract.MoviesEntry.COLUMN_CAT_KEY, FAVORITES_CAT_KEY);
+                movieValues.put(MoviesContract.MoviesEntry.COLUMN_TITLE, title);
+                movieValues.put(MoviesContract.MoviesEntry.COLUMN_MOVIE_ID, movieId);
+                movieValues.put(MoviesContract.MoviesEntry.COLUMN_POSTER_PATH, posterPath);
+                movieValues.put(MoviesContract.MoviesEntry.COLUMN_OVERVIEW, overview);
+                movieValues.put(MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE, releaseDate);
+                movieValues.put(MoviesContract.MoviesEntry.COLUMN_BACKDROP_PATH, backdropPath);
+                movieValues.put(MoviesContract.MoviesEntry.COLUMN_VOTE_AVERAGE, voteAverage);
+                movieValues.put(MoviesContract.MoviesEntry.COLUMN_VOTE_COUNT, voteCount);
+
+                getContentResolver().insert(MoviesContract.MoviesEntry.CONTENT_URI, movieValues);
+                Toast.makeText(getApplicationContext(), "Favorite Added", Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void unLiked(LikeButton likeButton) {
+                getContentResolver().delete(MoviesContract.MoviesEntry.CONTENT_URI,
+                        MoviesContract.MoviesEntry.COLUMN_MOVIE_ID + " = ? AND " + MoviesContract.MoviesEntry.COLUMN_CAT_KEY + " = ?",
+                        new String[]{Integer.toString(movieId), Long.toString(FAVORITES_CAT_KEY)});
+//                isFavorited = false;
+                Toast.makeText(getApplicationContext(), "Favorite Deleted", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
         return true;
     }
 
@@ -120,6 +181,22 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, MOVIEZONE_SHARE_HASHTAG);
         return shareIntent;
+    }
+
+
+    private boolean readState() {
+        // Check if a movie with this id exists in the favorites cursor
+        Cursor favoritesCursor = getContentResolver().query(
+                MoviesContract.MoviesEntry.CONTENT_URI,
+                new String[]{MoviesContract.MoviesEntry.COLUMN_MOVIE_ID},
+                MoviesContract.MoviesEntry.COLUMN_MOVIE_ID + " = ? AND " + MoviesContract.MoviesEntry.COLUMN_CAT_KEY + " = ?",
+                new String[]{Integer.toString(movieId), Long.toString(FAVORITES_CAT_KEY)},
+                null);
+        if (favoritesCursor.moveToFirst()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -155,21 +232,28 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data != null && data.moveToFirst()) {
 
-            //Extract properties from the cursor and populate their respective views with the extracted properties.
+            /*Extract properties from the cursor and populate their
+            respective views with the extracted properties.*/
+            title = data.getString(COL_MOVIE_TITLE);
+            movieId = data.getInt(COL_MOVIE_ID);
+            posterPath = data.getString(COL_MOVIE_POSTER_PATH);
+            overview = data.getString(COL_MOVIE_OVERVIEW);
+            releaseDate = data.getString(COL_MOVIE_RELEASE_DATE);
+            backdropPath = data.getString(COL_MOVIE_BACKDROP_PATH);
+            voteAverage = data.getFloat(COL_MOVIE_VOTE_AVERAGE);
+            voteCount = data.getInt(COL_MOVIE_VOTE_COUNT);
 
             //Image for the collapsible actionbar
-            String backdrop = data.getString(COL_MOVIE_BACKDROP_PATH);
-            if (backdrop.equals("null")){
-                backdrop = data.getString(COL_MOVIE_POSTER_PATH);
+            if (backdropPath.equals("null")) {
+                backdropPath = posterPath;
             }
             //Form the complete TMDB image url
-            String actionbarImageUrl = TMDB_BASE_IMAGE_URL + backdrop;
+            String actionbarImageUrl = TMDB_BASE_IMAGE_URL + backdropPath;
             Picasso.with(this)
                     .load(actionbarImageUrl)
                     .into(mBackdropImageView);
 
             //Title for the collapsible actionbar
-            String title = data.getString(COL_MOVIE_TITLE);
             this.setSupportActionBar(mToolbar);
             ActionBar actionBar = this.getSupportActionBar();
             if (actionBar != null) {
@@ -178,19 +262,17 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
             }
 
             //Release Date view info
-            String releaseDate = data.getString(COL_MOVIE_RELEASE_DATE);
-            mReleaseDateView.setText(releaseDate);
+            Date convertedDate = convertDate(releaseDate);
+            String formattedDate = formatDate(convertedDate);
+            mReleaseDateView.setText(formattedDate);
 
             //Plot Overview view info
-            String overview = data.getString(COL_MOVIE_OVERVIEW);
             mOverviewView.setText(overview);
 
             //Rating Bar view info
-            float voteAverage = data.getFloat(COL_MOVIE_VOTE_AVERAGE);
             mVoteAverageView.setRating((voteAverage*5)/10); //converts it to 5 star average
 
             //Vote count info
-            int voteCount = data.getInt(COL_MOVIE_VOTE_COUNT);
             String userVoteCount = "(" + voteCount + " Votes)";
             mVoteCountView.setText(userVoteCount);
         }
@@ -199,4 +281,28 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
     }
+
+    /**
+     * Convert Timed Date string into "yyyy-MM-dd" format.
+     */
+    private Date convertDate(String timedDateObject) {
+        SimpleDateFormat timedDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        Date convertedDate = new Date();
+        try {
+            convertedDate = timedDateFormat.parse(timedDateObject);
+
+        } catch (java.text.ParseException e) {
+            e.printStackTrace();
+        }
+        return convertedDate;
+    }
+
+    /**
+     * Return the formatted date string (i.e. "Mar 3, 1984") from a Date object.
+     */
+    private String formatDate(Date dateObject) {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+        return dateFormatter.format(dateObject);
+    }
+
 }

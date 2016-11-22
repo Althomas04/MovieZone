@@ -12,7 +12,7 @@ import app.com.example.althomas04.moviezone.Data.MoviesContract;
  */
 
 public class MovieLoader extends AsyncTaskLoader<Cursor> {
-
+    private static final String LOG_TAG = DetailActivity.class.getSimpleName();
 
     private String mCategoryParam;
     private int mPageParam;
@@ -35,18 +35,22 @@ public class MovieLoader extends AsyncTaskLoader<Cursor> {
 
     @Override
     public Cursor loadInBackground() {
+        String favoritesParam = "favorites";
 
-        if (mCategoryParam == "favorites") {
-            QueryUtils.addCategory(mContext, mCategoryParam);
+        if (mCategoryParam == null) {
             return null;
         }
+        //Insert favorites category into category table
+        Long catid = QueryUtils.addCategory(mContext, favoritesParam);
+
         //Perform the network request, parse the response, and store the response into the database.
         QueryUtils.fetchMovieData(mContext, mCategoryParam, mPageParam);
 
-        //Creates a cursor with the new data and returns it to the loader
-        Uri moviesForCategoryUri = MoviesContract.MoviesEntry.buildMoviesCategory(mCategoryParam);
+        //Creates a URI for the specific category
+        Uri moviesInCategoryUri = MoviesContract.MoviesEntry.buildMoviesCategory(mCategoryParam);
 
-        Cursor cursor = mContext.getContentResolver().query(moviesForCategoryUri,
+        //Creates a cursor with the new data and returns it to the loader
+        Cursor cursor = mContext.getContentResolver().query(moviesInCategoryUri,
                 mMovieCol,
                 null,
                 null,
