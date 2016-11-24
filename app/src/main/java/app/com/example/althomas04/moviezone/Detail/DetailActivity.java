@@ -1,4 +1,4 @@
-package app.com.example.althomas04.moviezone;
+package app.com.example.althomas04.moviezone.Detail;
 
 import android.app.LoaderManager;
 import android.content.ContentValues;
@@ -12,27 +12,33 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
+import android.view.View;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.like.LikeButton;
 import com.like.OnLikeListener;
-import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
 import app.com.example.althomas04.moviezone.Data.MoviesContract;
+import app.com.example.althomas04.moviezone.R;
+
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 
 
-public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class DetailActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = DetailActivity.class.getSimpleName();
     static final String DETAIL_URI = "URI";
@@ -45,13 +51,15 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     private final long FAVORITES_CAT_KEY = 1;
 
     private static final String TMDB_BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w780";
+    private static final String YOUTUBE_BASE_TRAILER_URL = "https://www.youtube.com/watch?v=";
 
     private static final String MOVIE_ID_URI_KEY = "movie_id_uri_key";
 
     private Uri movieIdUri;
     private LikeButton favButton;
 
-    private static final int DETAIL_LOADER = 0;
+    private static final int DETAIL_CURSOR_LOADER = 0;
+    private static final int DETAIL_LIST_LOADER = 1;
 
     private static final String[] DETAIL_COLUMNS = {
             MoviesContract.MoviesEntry.TABLE_NAME + "." + MoviesContract.MoviesEntry._ID,
@@ -91,11 +99,18 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     private int voteCount;
 
     private Toolbar mToolbar;
+    private TextView mGenreView;
+    private TextView mLanguageView;
+    private TextView mRuntimeView;
     private TextView mReleaseDateView;
     private TextView mOverviewView;
-    private ImageView mBackdropImageView;
+    private SimpleDraweeView mBackdropImageView;
     private RatingBar mVoteAverageView;
     private TextView mVoteCountView;
+    private SimpleDraweeView mTrailerView;
+    private TextView mEmptyTrailerView;
+    private TextView mReviewsView;
+    TextView mEmptyReviewsView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -106,16 +121,21 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         movieIdUri = Uri.parse(extras.getString(MOVIE_ID_URI_KEY));
 
 
-        getLoaderManager().initLoader(DETAIL_LOADER, null, this);
-        isFavorited = false;
+        getLoaderManager().initLoader(DETAIL_CURSOR_LOADER, null, cursorLoaderListener);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar_detail);
-        mBackdropImageView = (ImageView) findViewById(R.id.expandedImage);
+        mBackdropImageView = (SimpleDraweeView) findViewById(R.id.expandedImage);
+        mGenreView = (TextView) findViewById(R.id.genre);
+        mLanguageView = (TextView) findViewById(R.id.language);
+        mRuntimeView = (TextView) findViewById(R.id.runtime);
         mReleaseDateView = (TextView) findViewById(R.id.release_date);
         mOverviewView = (TextView) findViewById(R.id.plot_overview);
         mVoteAverageView = (RatingBar) findViewById(R.id.vote_average);
         mVoteCountView = (TextView) findViewById(R.id.vote_count);
-
+        mTrailerView = (SimpleDraweeView) findViewById(R.id.trailer_view);
+        mEmptyTrailerView = (TextView) findViewById(R.id.empty_trailer);
+        mReviewsView = (TextView) findViewById(R.id.reviews_view);
+        mEmptyReviewsView = (TextView) findViewById(R.id.empty_reviews);
     }
 
     @Override
@@ -166,7 +186,6 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
                 getContentResolver().delete(MoviesContract.MoviesEntry.CONTENT_URI,
                         MoviesContract.MoviesEntry.COLUMN_MOVIE_ID + " = ? AND " + MoviesContract.MoviesEntry.COLUMN_CAT_KEY + " = ?",
                         new String[]{Integer.toString(movieId), Long.toString(FAVORITES_CAT_KEY)});
-//                isFavorited = false;
                 Toast.makeText(getApplicationContext(), "Favorite Deleted", Toast.LENGTH_SHORT).show();
 
             }
@@ -211,76 +230,178 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        if (null != movieIdUri) {
-            // Now create and return a CursorLoader that will take care of
-            // creating a Cursor for the data being displayed.
-            return new CursorLoader(
-                    this,
-                    movieIdUri,
-                    DETAIL_COLUMNS,
-                    null,
-                    null,
-                    null
-            );
+    private LoaderManager.LoaderCallbacks<Cursor> cursorLoaderListener = new LoaderManager.LoaderCallbacks<Cursor>() {
+        @Override
+        public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+            if (null != movieIdUri) {
+                // Now create and return a MovieCursorLoader that will take care of
+                // creating a Cursor for the data being displayed.
+                return new CursorLoader(
+                        DetailActivity.this,
+                        movieIdUri,
+                        DETAIL_COLUMNS,
+                        null,
+                        null,
+                        null
+                );
+            }
+            return null;
         }
-        return null;
-    }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (data != null && data.moveToFirst()) {
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+            if (cursor != null && cursor.moveToFirst()) {
 
             /*Extract properties from the cursor and populate their
             respective views with the extracted properties.*/
-            title = data.getString(COL_MOVIE_TITLE);
-            movieId = data.getInt(COL_MOVIE_ID);
-            posterPath = data.getString(COL_MOVIE_POSTER_PATH);
-            overview = data.getString(COL_MOVIE_OVERVIEW);
-            releaseDate = data.getString(COL_MOVIE_RELEASE_DATE);
-            backdropPath = data.getString(COL_MOVIE_BACKDROP_PATH);
-            voteAverage = data.getFloat(COL_MOVIE_VOTE_AVERAGE);
-            voteCount = data.getInt(COL_MOVIE_VOTE_COUNT);
+                title = cursor.getString(COL_MOVIE_TITLE);
+                movieId = cursor.getInt(COL_MOVIE_ID);
+                posterPath = cursor.getString(COL_MOVIE_POSTER_PATH);
+                overview = cursor.getString(COL_MOVIE_OVERVIEW);
+                releaseDate = cursor.getString(COL_MOVIE_RELEASE_DATE);
+                backdropPath = cursor.getString(COL_MOVIE_BACKDROP_PATH);
+                voteAverage = cursor.getFloat(COL_MOVIE_VOTE_AVERAGE);
+                voteCount = cursor.getInt(COL_MOVIE_VOTE_COUNT);
 
-            //Image for the collapsible actionbar
-            if (backdropPath.equals("null")) {
-                backdropPath = posterPath;
+                //Image for the collapsible actionbar
+                if (backdropPath.equals("null")) {
+                    backdropPath = posterPath;
+                }
+                //Form the complete TMDB image url and set it using the fresco library
+                String actionbarImageUrl = TMDB_BASE_IMAGE_URL + backdropPath;
+                Uri uri = Uri.parse(actionbarImageUrl);
+                mBackdropImageView.setImageURI(uri);
+
+                //Title for the collapsible actionbar
+                DetailActivity.this.setSupportActionBar(mToolbar);
+                ActionBar actionBar = DetailActivity.this.getSupportActionBar();
+                if (actionBar != null) {
+                    actionBar.setDisplayHomeAsUpEnabled(true);
+                    actionBar.setTitle(title);
+                }
+
+                //Release Date view info
+                Date convertedDate = convertDate(releaseDate);
+                String formattedDate = formatDate(convertedDate);
+                mReleaseDateView.setText(formattedDate);
+
+                //Plot Overview view info
+                mOverviewView.setText(overview);
+
+                //Rating Bar view info
+                mVoteAverageView.setRating((voteAverage * 5) / 10); //converts it to 5 star average
+
+                //Vote count info
+                String userVoteCount = "(" + voteCount + " Votes)";
+                mVoteCountView.setText(userVoteCount);
+
+                //Close the cursor and initialize the new loader on finish.
+                cursor.close();
+                getLoaderManager().initLoader(DETAIL_LIST_LOADER, null, listLoaderListener);
             }
-            //Form the complete TMDB image url
-            String actionbarImageUrl = TMDB_BASE_IMAGE_URL + backdropPath;
-            Picasso.with(this)
-                    .load(actionbarImageUrl)
-                    .into(mBackdropImageView);
-
-            //Title for the collapsible actionbar
-            this.setSupportActionBar(mToolbar);
-            ActionBar actionBar = this.getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
-                actionBar.setTitle(title);
-            }
-
-            //Release Date view info
-            Date convertedDate = convertDate(releaseDate);
-            String formattedDate = formatDate(convertedDate);
-            mReleaseDateView.setText(formattedDate);
-
-            //Plot Overview view info
-            mOverviewView.setText(overview);
-
-            //Rating Bar view info
-            mVoteAverageView.setRating((voteAverage*5)/10); //converts it to 5 star average
-
-            //Vote count info
-            String userVoteCount = "(" + voteCount + " Votes)";
-            mVoteCountView.setText(userVoteCount);
         }
-    }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-    }
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+        }
+    };
+
+    private LoaderManager.LoaderCallbacks<ArrayList<ExtraMovieData>> listLoaderListener = new LoaderManager.LoaderCallbacks<ArrayList<ExtraMovieData>>() {
+
+        @Override
+        public Loader<ArrayList<ExtraMovieData>> onCreateLoader(int i, Bundle bundle) {
+            if (movieId > 0) {
+                Toast.makeText(DetailActivity.this, "works movieId = " + movieId, Toast.LENGTH_LONG);
+
+                // Create a new loader for the given
+                return new ExtraMovieListLoader(DetailActivity.this, movieId);
+            } else {
+                Toast.makeText(DetailActivity.this, "movieId = " + movieId, Toast.LENGTH_LONG);
+                return null;
+            }
+        }
+
+        @Override
+        public void onLoadFinished(Loader<ArrayList<ExtraMovieData>> loader, ArrayList<ExtraMovieData> extraMovieData) {
+            //Extract all the movieinfo from the arraylist
+            if (extraMovieData.size() == 0) {
+                CardView movieInfoCardOne = (CardView) findViewById(R.id.movie_info_card_one);
+                movieInfoCardOne.setVisibility(GONE);
+
+                mTrailerView.setVisibility(GONE);
+                mEmptyTrailerView.setVisibility(VISIBLE);
+
+                mReviewsView.setVisibility(GONE);
+                mEmptyReviewsView.setVisibility(VISIBLE);
+
+                return;
+            }
+            ExtraMovieData extramovieInfo = (ExtraMovieData) extraMovieData.get(0);
+
+            ArrayList<String> genres = extramovieInfo.getGenres();
+            mGenreView.setText("");
+            //Extract genres from the arraylist, and display only three genres max.
+            for (int i = 0; i < genres.size() && i < 3; i++) {
+                if (i == genres.size() - 1 || i == 2) {
+                    mGenreView.append(genres.get(i)); //No comma after the last item
+                } else {
+                    mGenreView.append(genres.get(i) + ", ");
+                }
+            }
+
+            //Extract and display runtime
+            int runtime = extramovieInfo.getRuntime();
+            mRuntimeView.setText(Integer.toString(runtime) + " min");
+
+            //Extract and display language
+            String language = extramovieInfo.getLanguage();
+            mLanguageView.setText(language);
+
+            //Extract trailer path
+            String trailerPath = extramovieInfo.getTrailerPath();
+            if (!trailerPath.equals(null)) {
+                //Create a complete youtube trailer url.
+                String trailerUrl = YOUTUBE_BASE_TRAILER_URL + trailerPath;
+                final Uri trailerUri = Uri.parse(trailerUrl);
+                //Create a thumbnail url with the trailer path and parse it for the fresco image loader.
+                String trailerThumbnailPath = String.format("http://img.youtube.com/vi/%1$s/0.jpg", trailerPath);
+                Uri trailerThumbnailUri = Uri.parse(trailerThumbnailPath);
+                mTrailerView.setImageURI(trailerThumbnailUri);
+                //Set a clickListener on the thumbnail, and create a trailer video view intent.
+                mTrailerView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, trailerUri);
+                        startActivity(intent);
+                    }
+                });
+            } else {
+                mTrailerView.setVisibility(GONE);
+                mEmptyTrailerView.setVisibility(VISIBLE);
+            }
+
+            ArrayList<ReviewsData> reviewsList = extramovieInfo.getReviews();
+            if (reviewsList.size() != 0) {
+                mReviewsView.setText("");
+                for (int i = 0; i < reviewsList.size(); i++) {
+                    ReviewsData reviews = reviewsList.get(i);
+                    String reviewAuthor = reviews.getAuthor();
+                    String reviewContent = reviews.getContent();
+                    mReviewsView.append(reviewAuthor + "\n");
+                    mReviewsView.append(reviewContent + "\n\n");
+                }
+            } else {
+                mReviewsView.setVisibility(GONE);
+                mEmptyReviewsView.setVisibility(VISIBLE);
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<ArrayList<ExtraMovieData>> loader) {
+
+        }
+    };
 
     /**
      * Convert Timed Date string into "yyyy-MM-dd" format.

@@ -1,15 +1,17 @@
-package app.com.example.althomas04.moviezone;
+package app.com.example.althomas04.moviezone.Main;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.facebook.drawee.view.SimpleDraweeView;
+
+import app.com.example.althomas04.moviezone.R;
 
 /**
  * Created by al.thomas04.
@@ -32,7 +34,7 @@ public class MovieAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         //Find the fields to populate in inflated template
-        ImageView posterImageView = (ImageView) view.findViewById(R.id.movie_poster_view);
+        SimpleDraweeView posterImageView = (SimpleDraweeView) view.findViewById(R.id.movie_poster_view);
         TextView titleTextView = (TextView) view.findViewById(R.id.movie_title);
 
         //Extract properties from the cursor
@@ -45,11 +47,9 @@ public class MovieAdapter extends CursorAdapter {
             titleTextView.setVisibility(View.GONE);
             //Form the complete TMDB image url
             String posterImageUrl = TMDB_BASE_IMAGE_URL + posterPath;
-            //Populate fields with the extracted properties.
-            Picasso.with(context)
-                    .load(posterImageUrl)
-                    .resize(700,1000)
-                    .into(posterImageView);
+            Uri uri = Uri.parse(posterImageUrl);
+            //Populate fields with the extracted properties using fresco.
+            posterImageView.setImageURI(uri);
         } else {
             posterImageView.setVisibility(View.GONE);
             titleTextView.setVisibility(View.VISIBLE);

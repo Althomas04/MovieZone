@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".DetailActivity"
+    tools:context=".Detail.DetailActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -19,7 +19,7 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:contentScrim="?attr/colorPrimary">
 
-            <ImageView
+            <com.facebook.drawee.view.SimpleDraweeView
                 android:id="@+id/expandedImage"
                 android:layout_width="match_parent"
                 android:layout_height="250dp"
@@ -31,7 +31,8 @@
                 android:id="@+id/toolbar_detail"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:layout_collapseMode="pin" >
+                app:layout_collapseMode="pin"
+                app:contentInsetStartWithNavigation="0dp">
 
 
             </android.support.v7.widget.Toolbar>
@@ -44,11 +45,11 @@
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white"
+        android:background="@color/ColorBackgroundDetail"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
 
-        <include layout="@layout/content_detail_frag">
+        <include layout="@layout/content_detail">
         </include>
 
     </android.support.v4.widget.NestedScrollView>

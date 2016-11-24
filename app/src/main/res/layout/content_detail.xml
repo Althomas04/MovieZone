@@ -1,0 +1,279 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="10dp">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/movie_info_card_one"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/card_margin_left"
+        android:layout_marginRight="@dimen/card_margin_right"
+        android:layout_marginTop="@dimen/card_margin_top"
+        android:layout_marginBottom="@dimen/card_margin_bottom"
+        card_view:cardCornerRadius="4dp">
+
+        <RelativeLayout
+            style="@style/Widget.CardContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/language_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/language_title"
+                android:textColor="@android:color/black"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/language"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/language_title"
+                android:padding="4dp"
+                android:textSize="15sp"
+                android:textColor="@android:color/darker_gray"
+                tools:text="English" />
+
+            <TextView
+                android:id="@+id/runtime_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/runtime"
+                android:text="@string/runtime_title"
+                android:textColor="@android:color/black"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/runtime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:padding="4dp"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="15sp"
+                tools:text="139 min" />
+
+            <TextView
+                android:id="@+id/genre_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/language_title"
+                android:layout_alignParentBottom="true"
+                android:text="@string/genre_title"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textColor="@android:color/black"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/genre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="5dp"
+                android:paddingLeft="5dp"
+                android:paddingBottom="2dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_toRightOf="@+id/genre_title"
+                android:layout_alignParentBottom="true"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="15sp"
+                tools:text="Drama" />
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/movie_info_card_two"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/card_margin_left"
+        android:layout_marginRight="@dimen/card_margin_right"
+        android:layout_marginTop="@dimen/card_margin_top"
+        android:layout_marginBottom="@dimen/card_margin_bottom"
+        card_view:cardCornerRadius="4dp">
+
+        <RelativeLayout
+            style="@style/Widget.CardContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/rating_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/user_rating"
+                android:textColor="@android:color/black"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textStyle="bold" />
+
+            <RatingBar
+                android:id="@+id/vote_average"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rating_title"
+                style="?android:attr/ratingBarStyleSmall"
+                android:progressBackgroundTint="@android:color/darker_gray"
+                android:numStars="5"
+                android:stepSize="0.5" />
+
+            <TextView
+                android:id="@+id/vote_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/vote_average"
+                android:textColor="@android:color/darker_gray"
+                tools:text="256 Votes" />
+
+            <TextView
+                android:id="@+id/release_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignRight="@+id/rating_title"
+                android:text="@string/release_date"
+                android:textColor="@android:color/black"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/release_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/release_title"
+                android:textColor="@android:color/darker_gray"
+                tools:text="Oct 16, 2015" />
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/movie_info_plot_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/card_margin_left"
+        android:layout_marginRight="@dimen/card_margin_right"
+        android:layout_marginTop="@dimen/card_margin_top"
+        android:layout_marginBottom="@dimen/card_margin_bottom"
+        card_view:cardCornerRadius="4dp">
+
+        <LinearLayout
+            style="@style/Widget.CardContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/plot_overview"
+                android:textColor="@android:color/black"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/plot_overview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/darker_gray" />
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/movie_info_trailer_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/card_margin_left"
+        android:layout_marginRight="@dimen/card_margin_right"
+        android:layout_marginTop="@dimen/card_margin_top"
+        android:layout_marginBottom="@dimen/card_margin_bottom"
+        card_view:cardCornerRadius="4dp">
+
+        <LinearLayout
+            style="@style/Widget.CardContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/trailer_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/trailer"
+                android:textColor="@android:color/black"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/empty_trailer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_trailer"
+                android:textColor="@android:color/darker_gray"
+                android:visibility="gone" />
+
+            <com.facebook.drawee.view.SimpleDraweeView
+                android:id="@+id/trailer_view"
+                android:layout_width="match_parent"
+                android:layout_height="175dp" />
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/movie_info_reviews_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/card_margin_left"
+        android:layout_marginRight="@dimen/card_margin_right"
+        android:layout_marginTop="@dimen/card_margin_top"
+        android:layout_marginBottom="@dimen/card_margin_bottom"
+        card_view:cardCornerRadius="4dp">
+
+        <LinearLayout
+            style="@style/Widget.CardContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/review_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reviews"
+                android:textColor="@android:color/black"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/empty_reviews"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_reviews"
+                android:textColor="@android:color/darker_gray"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/reviews_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/darker_gray" />
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".Main.MainActivity">
 
     <GridView
         android:id="@+id/grid_view_main"
@@ -12,12 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/black"/>
-
-<!--    <android.support.v7.widget.RecyclerView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/recyclerview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />-->
 
     <ProgressBar
         android:id="@+id/loading_spinner"

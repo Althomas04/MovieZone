@@ -1,4 +1,4 @@
-package app.com.example.althomas04.moviezone;
+package app.com.example.althomas04.moviezone.Main;
 
 /**
  * Created by al.thomas04 on 11/17/2016.
@@ -23,27 +23,28 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Vector;
 
+import app.com.example.althomas04.moviezone.BuildConfig;
 import app.com.example.althomas04.moviezone.Data.MoviesContract;
 
 /**
  * Helper methods related to requesting and receiving Movie data from TMDB.
  */
-public final class QueryUtils {
+public final class MainQueryUtils {
     /**
      * Tag for the log messages
      */
-    public static final String LOG_TAG = QueryUtils.class.getSimpleName();
+    public static final String LOG_TAG = MainQueryUtils.class.getSimpleName();
 
     public static int mPageParam;
     /**
-     * Create a private constructor because no one should ever create a {@link QueryUtils} object.
+     * Create a private constructor because no one should ever create a {@link MainQueryUtils} object.
      * This class is only meant to hold static variables and methods, which can be accessed
-     * directly from the class name QueryUtils (and an object instance of QueryUtils is not needed).
+     * directly from the class name MainQueryUtils (and an object instance of MainQueryUtils is not needed).
      */
-    private QueryUtils() {
+    private MainQueryUtils() {
     }
 
-    public static void fetchMovieData(Context context, String categoryParam, int pageParam) {
+    public static void fetchMovieData(Context context, String pathParam, int pageParam) {
         Log.d(LOG_TAG, "Starting JSON request");
 
         // These two need to be declared outside the try/catch
@@ -67,7 +68,7 @@ public final class QueryUtils {
             final String PAGE_PARAM = "page";
 
             Uri builtUri = Uri.parse(TMDB_BASE_URL).buildUpon()
-                    .appendPath(categoryParam)
+                    .appendPath(pathParam)
                     .appendQueryParameter(APIKEY_PARAM, BuildConfig.TMDB_API_KEY)
                     .appendQueryParameter(PAGE_PARAM, pageParamString)
                     .build();
@@ -103,13 +104,12 @@ public final class QueryUtils {
                 return;
             }
             moviesJsonStr = buffer.toString();
-            getMovieDataFromJson(context, moviesJsonStr, categoryParam);
+            getMovieDataFromJson(context, moviesJsonStr, pathParam);
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error IOException ", e);
             // If the code didn't successfully get the movie data, there's no point in attempting
             // to parse it.
-            return;
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();

@@ -33,6 +33,11 @@
     <string name="contact_email_body">Please describe any concerns with as much details as possible, thank you.</string>
     <string name="no_movies">No Movies Found</string>
     <string name="action_favorite_button">Favorite</string>
+    <string name="genre_title">Genre:</string>
+    <string name="language_title">Language:</string>
+    <string name="runtime_title">Runtime:</string>
+    <string name="no_trailer">No trailer found.</string>
+    <string name="no_reviews">No reviews found.</string>
 
 
 </resources>

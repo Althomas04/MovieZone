@@ -1,8 +1,7 @@
-package app.com.example.althomas04.moviezone;
+package app.com.example.althomas04.moviezone.Main;
 
 import android.app.LoaderManager;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -20,7 +19,12 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+
+import app.com.example.althomas04.moviezone.AboutActivity;
 import app.com.example.althomas04.moviezone.Data.MoviesContract;
+import app.com.example.althomas04.moviezone.Detail.DetailActivity;
+import app.com.example.althomas04.moviezone.R;
 
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -32,7 +36,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public String categoryParam = "popular";
 
-    public int pageParam = 1;
+    public int newPageParam = 1;
+    public int oldPageParam = 0;
 
     public Cursor mLoadedCursor;
 
@@ -75,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fresco.initialize(this);
         setContentView(R.layout.activity_main);
 
         // Find a reference to the {@link ProgressBar} in the layout
@@ -152,9 +158,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        // Handle action bar item clicks here.
         int id = item.getItemId();
         switch (id) {
             case R.id.action_most_popular:
@@ -206,23 +210,31 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void onCategoryChanged() {
-        //Reset page parameter
-        pageParam = 1;
+        //Reset page parameters
+        oldPageParam = 0;
+        newPageParam = 1;
         //Restart the loader with new category param
         getLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
         //Reset the savedInstanceState value to 0 to prevent the new gridview from automatically
         //scrolling to an item using the previously saved position.
         mPosition = 0;
+        mGridView.setSelection(mPosition);
         //Set the loading spinner to reappear when reloading view.
         mLoadingSpinnerView.setVisibility(View.VISIBLE);
     }
 
     private void loadNewPage(){
         int cursorCount = mLoadedCursor.getCount();
-        pageParam = (cursorCount/20)+1;
-        //Restart the loader with new page param
-        getLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
+        newPageParam = (cursorCount / 20) + 1;
+        //Check if new pages exist, return if no new pages exist
+        // prevents loader from restarting an infinite amount of times
+        if (newPageParam != oldPageParam) {
 
+            oldPageParam = newPageParam;
+            //Restart the loader with new page param
+            getLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
+        }
+        return;
     }
 
     private NetworkInfo checkConnectionStatus(){
@@ -238,11 +250,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mNetworkStatus = checkConnectionStatus();
         if (mNetworkStatus != null && mNetworkStatus.isConnected() && !categoryParam.equals("favorites")) {
             //If network connection exists and the category selected is not "favorites", request & return the new/updated data
-            return new MovieLoader(this, categoryParam, pageParam, MOVIE_COLUMNS);
+            return new MovieCursorLoader(this, categoryParam, newPageParam, MOVIE_COLUMNS);
         } else {
             //If network connection does not exist, return the previously stored data for the select category
             Uri moviesInCategoryUri = MoviesContract.MoviesEntry.buildMoviesCategory(categoryParam);
-            return new CursorLoader(this,
+            return new android.content.CursorLoader(this,
                     moviesInCategoryUri,
                     MOVIE_COLUMNS,
                     null,
