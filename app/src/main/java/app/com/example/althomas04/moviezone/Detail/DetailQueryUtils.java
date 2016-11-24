@@ -122,7 +122,7 @@ public class DetailQueryUtils {
         final String TMDB_GENRES = "genres";
         final String TMDB_NAME = "name";
         final String TMDB_RUNTIME = "runtime";
-        final String TMDB_LANGUAGE = "spoken_languages";
+        final String TMDB_LANGUAGE = "original_language";
         final String TMDB_RESULTS = "results";
         final String TMDB_VIDEOS = "videos";
         final String TMDB_VIDEO_KEY = "key";
@@ -148,9 +148,7 @@ public class DetailQueryUtils {
 
             int runtime = moviesJson.getInt(TMDB_RUNTIME);
 
-            JSONArray languageArray = moviesJson.getJSONArray(TMDB_LANGUAGE);
-            JSONObject languageInfo = languageArray.getJSONObject(0);
-            String language = languageInfo.getString(TMDB_NAME);
+            String language = moviesJson.getString(TMDB_LANGUAGE);
 
             JSONObject videoObject = moviesJson.getJSONObject(TMDB_VIDEOS);
             JSONArray videoResultArray = videoObject.getJSONArray(TMDB_RESULTS);

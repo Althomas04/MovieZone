@@ -36,8 +36,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@+id/language_title"
-                android:padding="4dp"
-                android:textSize="15sp"
+                android:paddingLeft="4dp"
+                android:paddingTop="4dp"
+                android:textSize="16sp"
                 android:textColor="@android:color/darker_gray"
                 tools:text="English" />
 
@@ -56,9 +57,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
-                android:padding="4dp"
+                android:paddingLeft="5dp"
+                android:paddingTop="4dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
                 android:textColor="@android:color/darker_gray"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 tools:text="139 min" />
 
             <TextView
@@ -78,13 +81,13 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="5dp"
                 android:paddingLeft="5dp"
-                android:paddingBottom="2dp"
+                android:paddingBottom="1dp"
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:layout_toRightOf="@+id/genre_title"
                 android:layout_alignParentBottom="true"
                 android:textColor="@android:color/darker_gray"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 tools:text="Drama" />
 
         </RelativeLayout>
@@ -131,6 +134,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/vote_average"
                 android:textColor="@android:color/darker_gray"
+                android:textSize="15sp"
                 tools:text="256 Votes" />
 
             <TextView
@@ -151,6 +155,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_below="@+id/release_title"
                 android:textColor="@android:color/darker_gray"
+                android:textSize="15sp"
                 tools:text="Oct 16, 2015" />
 
         </RelativeLayout>
@@ -185,7 +190,8 @@
                 android:id="@+id/plot_overview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/darker_gray" />
+                android:textColor="@android:color/darker_gray"
+                android:textSize="15sp" />
 
         </LinearLayout>
 
@@ -270,7 +276,18 @@
                 android:id="@+id/reviews_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="20"
                 android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/see_more_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:textColor="@color/colorAccent"
+                android:text="@string/see_more" />
+
 
         </LinearLayout>
 

@@ -38,6 +38,8 @@
     <string name="runtime_title">Runtime:</string>
     <string name="no_trailer">No trailer found.</string>
     <string name="no_reviews">No reviews found.</string>
+    <string name="see_more">...see more.</string>
+    <string name="see_less">...see less.</string>
 
 
 </resources>

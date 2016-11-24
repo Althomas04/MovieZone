@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -97,6 +98,7 @@ public class DetailActivity extends AppCompatActivity {
     private String backdropPath;
     private float voteAverage;
     private int voteCount;
+    private String trailerUrl;
 
     private Toolbar mToolbar;
     private TextView mGenreView;
@@ -110,7 +112,8 @@ public class DetailActivity extends AppCompatActivity {
     private SimpleDraweeView mTrailerView;
     private TextView mEmptyTrailerView;
     private TextView mReviewsView;
-    TextView mEmptyReviewsView;
+    private TextView mEmptyReviewsView;
+    private TextView mSeeMoreView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -136,6 +139,21 @@ public class DetailActivity extends AppCompatActivity {
         mEmptyTrailerView = (TextView) findViewById(R.id.empty_trailer);
         mReviewsView = (TextView) findViewById(R.id.reviews_view);
         mEmptyReviewsView = (TextView) findViewById(R.id.empty_reviews);
+        mSeeMoreView = (TextView) findViewById(R.id.see_more_view);
+
+        //Expands reviews textview to show more/less reviews when clicked.
+        mSeeMoreView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mSeeMoreView.getText().equals("...see more.")) {
+                    mSeeMoreView.setText("...see less.");
+                    mReviewsView.setMaxLines(100);
+                } else {
+                    mSeeMoreView.setText("...see more.");
+                    mReviewsView.setMaxLines(20);
+                }
+            }
+        });
     }
 
     @Override
@@ -198,7 +216,7 @@ public class DetailActivity extends AppCompatActivity {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, MOVIEZONE_SHARE_HASHTAG);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, title + "Trailer: " + trailerUrl + " " + MOVIEZONE_SHARE_HASHTAG);
         return shareIntent;
     }
 
@@ -295,8 +313,7 @@ public class DetailActivity extends AppCompatActivity {
                 String userVoteCount = "(" + voteCount + " Votes)";
                 mVoteCountView.setText(userVoteCount);
 
-                //Close the cursor and initialize the new loader on finish.
-                cursor.close();
+                //Initialize the new loader on finish.
                 getLoaderManager().initLoader(DETAIL_LIST_LOADER, null, listLoaderListener);
             }
         }
@@ -326,13 +343,15 @@ public class DetailActivity extends AppCompatActivity {
         public void onLoadFinished(Loader<ArrayList<ExtraMovieData>> loader, ArrayList<ExtraMovieData> extraMovieData) {
             //Extract all the movieinfo from the arraylist
             if (extraMovieData.size() == 0) {
+                //If no extra movie info is found, remove the first card view (language, genre, runtime).
                 CardView movieInfoCardOne = (CardView) findViewById(R.id.movie_info_card_one);
                 movieInfoCardOne.setVisibility(GONE);
-
+                //Replace trailer with empty trailer textview.
                 mTrailerView.setVisibility(GONE);
                 mEmptyTrailerView.setVisibility(VISIBLE);
-
+                //Replace reviews and "see more" button with empty reviews textview.
                 mReviewsView.setVisibility(GONE);
+                mSeeMoreView.setVisibility(GONE);
                 mEmptyReviewsView.setVisibility(VISIBLE);
 
                 return;
@@ -355,14 +374,14 @@ public class DetailActivity extends AppCompatActivity {
             mRuntimeView.setText(Integer.toString(runtime) + " min");
 
             //Extract and display language
-            String language = extramovieInfo.getLanguage();
+            String language = extramovieInfo.getLanguage().toUpperCase();
             mLanguageView.setText(language);
 
             //Extract trailer path
             String trailerPath = extramovieInfo.getTrailerPath();
             if (!trailerPath.equals(null)) {
                 //Create a complete youtube trailer url.
-                String trailerUrl = YOUTUBE_BASE_TRAILER_URL + trailerPath;
+                trailerUrl = YOUTUBE_BASE_TRAILER_URL + trailerPath;
                 final Uri trailerUri = Uri.parse(trailerUrl);
                 //Create a thumbnail url with the trailer path and parse it for the fresco image loader.
                 String trailerThumbnailPath = String.format("http://img.youtube.com/vi/%1$s/0.jpg", trailerPath);
@@ -377,22 +396,26 @@ public class DetailActivity extends AppCompatActivity {
                     }
                 });
             } else {
+                //Replace trailer with empty trailer textview if no trailers exist.
                 mTrailerView.setVisibility(GONE);
                 mEmptyTrailerView.setVisibility(VISIBLE);
             }
 
+            //Extract each review author and content and display it in reviews textview.
             ArrayList<ReviewsData> reviewsList = extramovieInfo.getReviews();
             if (reviewsList.size() != 0) {
                 mReviewsView.setText("");
                 for (int i = 0; i < reviewsList.size(); i++) {
                     ReviewsData reviews = reviewsList.get(i);
-                    String reviewAuthor = reviews.getAuthor();
+                    String reviewAuthor = reviews.getAuthor().toUpperCase(); //Author text is set to uppercase
                     String reviewContent = reviews.getContent();
-                    mReviewsView.append(reviewAuthor + "\n");
-                    mReviewsView.append(reviewContent + "\n\n");
+                    mReviewsView.append(Html.fromHtml("<b>" + reviewAuthor + "</b>")); //Author text is set to bold
+                    mReviewsView.append("\n" + reviewContent + "\n\n"); //Appends content to the next line (of author)
                 }
             } else {
+                //Replace trailer with empty trailer textview if no trailers exist.
                 mReviewsView.setVisibility(GONE);
+                mSeeMoreView.setVisibility(GONE);
                 mEmptyReviewsView.setVisibility(VISIBLE);
             }
         }
@@ -425,5 +448,6 @@ public class DetailActivity extends AppCompatActivity {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
         return dateFormatter.format(dateObject);
     }
+
 
 }

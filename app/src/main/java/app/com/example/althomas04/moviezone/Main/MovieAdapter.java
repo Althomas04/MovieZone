@@ -20,7 +20,7 @@ import app.com.example.althomas04.moviezone.R;
 
 public class MovieAdapter extends CursorAdapter {
 
-    private static final String TMDB_BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w300";
+    private static final String TMDB_BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w500";
 
     public MovieAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
