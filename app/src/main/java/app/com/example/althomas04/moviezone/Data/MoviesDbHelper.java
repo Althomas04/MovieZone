@@ -7,7 +7,7 @@ import app.com.example.althomas04.moviezone.Data.MoviesContract.CategoryEntry;
 import app.com.example.althomas04.moviezone.Data.MoviesContract.MoviesEntry;
 
 /**
- * Manages a local database for weather data.
+ * Manages a local database for movie data.
  */
 public class MoviesDbHelper extends SQLiteOpenHelper {
 
